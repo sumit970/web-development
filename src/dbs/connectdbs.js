@@ -1,6 +1,6 @@
 
 const mongoose = require('mongoose');
-
+//connets to mongodb and defines collections 
 mongoose.connect("mongodb://localhost:27017/login_user_details",{
 
     useNewUrlParser: true,
