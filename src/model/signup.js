@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mongoose = require('mongoose')
 // const emitter=require('emitter')
 // emitter.setMaxListeners(30);
@@ -6,6 +7,7 @@ const jwt = require('jsonwebtoken');
 
 
 const signupschemap = new mongoose.Schema({
+    
     firstname:
     {
         type: String,
@@ -33,21 +35,30 @@ const signupschemap = new mongoose.Schema({
 
     }]
 })
+
 signupschemap.methods.generateAuthToken = async function () {
     try {
-        const token = await jwt.sign({ _id: this._id.toString() }, "sumitismynamesumitismynamesumitismyname")
+
+        const token = await jwt.sign({ _id: this._id.toString() }, process.env.SECRET_KEY)
+
         // console.log(token);
-        this.tokens = this.tokens.concat({ token: token })
+        this.tokens = this.tokens.concat({ token: token });
 
         await this.save();
         return token;
 
     } catch (err) {
+
         // res.send(err)
+
         console.error(err);
 
     }
+
 }
+
+
+
 // signupschemap.pre("save",async function(next){
 //
 // if (this.isModified("password")) {
@@ -60,6 +71,9 @@ signupschemap.methods.generateAuthToken = async function () {
 
     // });
 
+
+
+
     signupschemap.pre("save", async function (next) {
         if (this.isModified("password")) {
             this.password = await bcrypt.hash(this.password, 10);
@@ -67,6 +81,8 @@ signupschemap.methods.generateAuthToken = async function () {
         next();
     });
     const signupmodel = new mongoose.model('signupmodel', signupschemap);
-
     module.exports = signupmodel;
+    
 // }
+
+

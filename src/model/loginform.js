@@ -1,24 +1,25 @@
 const mongoose = require('mongoose');
 // const validator = require('validator');
+const jwt = require('jsonwebtoken');
 
-
-const  loginschema = new mongoose.Schema({
+const loginschema = new mongoose.Schema({
     userid: {
-        type:String,
+        type: String,
         required: true
         // minLength:6,
         
     },
-
     password: {
-        type:String,
+        type: String,
         required: true,
         unique: true
         // minLength:8,
 
-    }
+
+    },
 });
 
- const modellogin= mongoose.model("modellogin",loginschema);
+
+const modellogin = mongoose.model("modellogin", loginschema);
 
 module.exports = modellogin;

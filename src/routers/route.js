@@ -1,4 +1,5 @@
 //imported modules in express
+require('dotenv').config();
 const { Console } = require('console');
 const { ADDRGETNETWORKPARAMS } = require('dns');
 const { urlencoded } = require('express');
@@ -10,7 +11,8 @@ const { findOne } = require('../model/loginform');
 require('../dbs/connectdbs')
 const modelsignup = require('../model/signup');
 const jwt=require('jsonwebtoken');
-
+const bcrypt = require('bcrypt');
+const signupmodel = require('../model/signup');
 
 
 //to include the static file in expressjs
@@ -24,6 +26,7 @@ route.use(express.urlencoded({ extended: true }));
 route.get('/', (req, res) => {
     res.status(200).sendFile(path.join(__dirname, '../../static/html/signup.html'));
 });
+
 //to handle the get request for the login page using "/login".
 route.get('/login', (req, res) => {
     res.status(200).sendFile(path.join(__dirname, '../../static/html/login.html'));
@@ -44,12 +47,12 @@ route.post('/', async (req, res) => {
         password: password
     })
     const token =await signup.generateAuthToken();
+    console.log(token)
      
-
     //to save the data in mongodb
     const savesignup = await signup.save();
     console.log(savesignup);
-    res.status(200).sendFile(path.join(__dirname,'../../static/html/home.html'));
+    res.status(200).sendFile(path.join(__dirname,'../../static/html/login.html'));
     // const findall = modelsignup.find();
     // Console.log(findall);
     // res.status(200).send(findall);
@@ -62,28 +65,25 @@ route.post('/login', async (req, res) => {
     console.log("Hello world! this is message from post request of /login");
     const username = req.body.userid;
     const password = req.body.password;
-    const userfind = modelsignup.findOne({ email: username }, function (err, data) {
-        try {
+    const userfind  =  await signupmodel.findOne({ email: username }) ;
+        
+                const isMatch =await  bcrypt.compare(password, userfind.password) ;
+                const token =await userfind.generateAuthToken();
+                console.log(token)
+                
+                if ( isMatch) {
+                    console.log( "\n password match successfuly");
+                    res.status(200).sendFile(path.join(__dirname,'../../static/html/home.html'));
+                }
 
-            const checkpassword = bcrypt.compare(password, data.password, function (err, result) {
-                if (checkpassword) {
-                    console.log(result + "\npassword match successfuly");
+                else  {
+                    console.log(err + " \n password match failure");
                 }
-                else if (err) {
-                    console.log(err + "\n password match failure");
-                }
+                
                 // result == true
-            }
-            );
-        }
-        catch (err) {
-            console.log('Invalid user or maybe some error has occured');
-        }
-    });
-})
 
-
-
+        });
+            
 // const createtoken= async()=>{
 //     const token =await jwt.sign({id__:"94369824798237489749287346598437"},"ksdjfbaskdfjbsdmnckjsdbfshfdbjsdsdkfbdsbKDSFkdsbfk")
 //     // Console.log(token)
@@ -95,6 +95,7 @@ route.post('/login', async (req, res) => {
 
 // }
 // createtoken();
+
 
 
 module.exports = route;
